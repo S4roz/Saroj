@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Will You Be Mine?</title>
+<style>
+  :root{
+    --bg:#0f1724;
+    --card:#0b1220;
+    --accent:#ff6b81;
+    --muted:#9aa4b2;
+    --glass: rgba(255,255,255,0.04);
+  }
+  html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;}
+  body{
+    background:
+      radial-gradient(circle at 10% 20%, rgba(255,107,129,0.08), transparent 8%),
+      radial-gradient(circle at 90% 80%, rgba(96,165,250,0.04), transparent 10%),
+      var(--bg);
+    color:#e6eef6;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+  }
+
+  .card{
+    width:min(920px, 96%);
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border: 1px solid rgba(255,255,255,0.04);
+    border-radius:16px;
+    box-shadow: 0 10px 30px rgba(2,6,23,0.6);
+    overflow:hidden;
+    display:grid;
+    grid-template-columns: 420px 1fr;
+    min-height:520px;
+  }
+
+  .left{
+    padding:28px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.0));
+    display:flex;flex-direction:column;gap:18px;
+    align-items:flex-start;
+  }
+
+  .logo{
+    display:flex;gap:10px;align-items:center;
+  }
+  .logo .heart{
+    width:46px;height:46px;border-radius:12px;
+    display:grid;place-items:center;font-size:22px;
+    background:linear-gradient(135deg,var(--accent),#ff9bb4);
+    box-shadow: 0 6px 18px rgba(255,107,129,0.24);
+  }
+  h1{margin:0;font-size:20px;}
+  p.lead{margin:0;color:var(--muted);font-size:13px;line-height:1.5;}
+
+  .controls{
+    display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;
+  }
+  select, button{
+    background:var(--glass);
+    border:1px solid rgba(255,255,255,0.035);
+    color:var(--muted);
+    padding:10px 12px;border-radius:10px;font-size:13px;
+    outline:none;cursor:pointer;
+  }
+  button.primary{
+    background:linear-gradient(90deg,var(--accent),#ff9bb4);
+    color:white;border:none;box-shadow:0 8px 20px rgba(255,107,129,0.16);
+  }
+  .small{
+    font-size:12px;padding:8px 10px;border-radius:8px;
+  }
+
+  .right{
+    padding:28px;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:18px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));
+  }
+
+  .speech{
+    width:100%;max-width:520px;min-height:160px;
+    background:rgba(255,255,255,0.02);
+    border-radius:14px;padding:22px;color:#fff;font-size:18px;line-height:1.35;
+    display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;
+    transform-origin:center;
+    transition:transform .45s cubic-bezier(.22,.9,.35,1),opacity .35s;
+  }
+
+  .modeLabel{color:var(--muted);font-size:13px;margin-top:6px;}
+  .signature{font-size:13px;color:var(--muted);margin-top:8px;}
+
+  /* fun pill list */
+  .phrases{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;padding-top:6px}
+  .chip{background:rgba(255,255,255,0.02);padding:8px 10px;border-radius:999px;font-size:13px;color:var(--muted);cursor:pointer}
+  .chip:hover{background:rgba(255,255,255,0.04)}
+
+  /* confetti canvas */
+  canvas#confetti{
+    position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;
+  }
+
+  /* small footer */
+  .footer{position:absolute;left:18px;bottom:18px;color:var(--muted);font-size:12px}
+  @media (max-width:880px){
+    .card{grid-template-columns:1fr;min-height:720px}
+    .left{align-items:center;text-align:center}
+    .footer{left:50%;transform:translateX(-50%)}
+  }
+
+  /* idle animation */
+  .speech.pop{transform:translateY(-6px) scale(1.02);box-shadow:0 18px 40px rgba(2,6,23,0.48)}
+</style>
+</head>
+<body>
+<div class="card" role="main" aria-label="Proposal prank card">
+  <div class="left">
+    <div class="logo">
+      <div class="heart">💌</div>
+      <div>
+        <h1>Pick a style — surprise your crush!</h1>
+        <p class="lead">A playful page that proposes the same message in different voices. Use it kindly — keep it fun and respectful.</p>
+      </div>
+    </div>
+
+    <div class="controls" aria-hidden="false">
+      <select id="modeSelect" aria-label="Proposal style selector">
+        <option value="romantic">Romantic</option>
+        <option value="funny">Funny / Meme</option>
+        <option value="shakespeare">Shakespearean</option>
+        <option value="pirate">Pirate</option>
+        <option value="dramatic">Dramatic</option>
+        <option value="nerdy">Nerdy</option>
+      </select>
+
+      <input id="nameInput" class="small" placeholder="Crush's first name (optional)" aria-label="Crush name" />
+
+      <button id="surpriseBtn" class="primary">Propose ✨</button>
+      <button id="randomBtn" class="small">Random line</button>
+
+      <button id="confettiToggle" class="small" title="toggle confetti">Confetti 🎉</button>
+      <button id="resetBtn" class="small" title="reset to default">Reset</button>
+    </div>
+
+    <div style="margin-top:8px;color:var(--muted);font-size:13px">
+      Quick tips:
+      <ul style="margin:8px 0 0 18px;">
+        <li>Customize the lines in the code to match your humor.</li>
+        <li>Don't surprise them if they're uncomfortable with public pranks.</li>
+      </ul>
+    </div>
+
+    <div class="footer">Made with a wink — edit freely 🫢</div>
+  </div>
+
+  <div class="right">
+    <canvas id="confetti"></canvas>
+
+    <div class="speech" id="speech" role="article" aria-live="polite">
+      <div id="message">Hey — you. Yes, you. Want to make coffee and memories with me?</div>
+      <div class="signature" id="signature">— Someone who thinks you're amazing</div>
+      <div class="modeLabel" id="modeLabel">Style: Romantic</div>
+      <div class="phrases" id="phrases">
+        <!-- chips filled by JS -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* -------------------------
+   Proposal data
+   ------------------------- */
+const TEMPLATES = {
+  romantic: [
+    "Hey {N}, will you be the reason I smile like an idiot every day?",
+    "My heart wrote you a playlist — will you be my favorite song?",
+    "If loving you were a sunrise, I'd wake up early forever. Will you be mine?"
+  ],
+  funny: [
+    "Roses are red. Violets are blue. I ordered pizza — will you split it with me and say yes?",
+    "I checked the terms and conditions: step 1, meet me. step 2, fall in love. Ready?",
+    "Warning: Saying yes may cause excessive happiness and bad dancing. Still in?"
+  ],
+  shakespeare: [
+    "Dearest {N}, art thou willing to join my side in this merry play called life?",
+    "If I were to vow thee constancy, wouldst thou accept this humble fool?",
+    "My heart, like a stage, longs for thy entrance; wilt thou tread it with me?"
+  ],
+  pirate: [
+    "Arrr, {N}! Ye be the treasure I seek — sail with me on this wild voyage?",
+    "Shiver me timbers, I swab the decks for a 'aye' from ye. Fancy an adventure?",
+    "Hoist the sails! I be proposing — be ye my matey for life?"
+  ],
+  dramatic: [
+    "{N}, in the grand cinema of my life, you are the final scene. Will you star alongside me?",
+    "Cue the violins — I stand before you asking, shall we write our own epic?",
+    "Everything leads to this: will you let me be the one who stands by you?"
+  ],
+  nerdy: [
+    "I ran the simulation 10^6 times — highest probability of happiness is with you. Will you run it IRL?",
+    "You + Me = ∑(happiness). Want to optimize together?",
+    "If we were algorithms, we'd be a perfect merge. Care to pair-program life with me?"
+  ]
+};
+
+const SIGNATURES = {
+  romantic: "— Someone who thinks you're amazing",
+  funny: "— A goofball with honest intentions",
+  shakespeare: "— Thy (slightly awkward) admirer",
+  pirate:
